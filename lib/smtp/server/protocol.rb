@@ -59,8 +59,6 @@ module SMTP
           process_starttls
         when 'AUTH'
           process_auth rest
-        when 'XFORWARD'
-          process_xforward rest
         when 'MAIL'
           rest.slice!(/^FROM:\s*/i) if rest
           process_mail_from rest
@@ -117,7 +115,6 @@ module SMTP
           params << "SIZE #{max_size}" if respond_to?(:max_size)
           params << "PIPELINING"
           params << "8BITMIME"
-          params << "XFORWARD NAME ADDR HELO"
           #params << "ENHANCEDSTATUSCODES"
           reply 250, params
           reset_protocol_state
@@ -237,16 +234,6 @@ module SMTP
         else
           reply 535, "invalid authentication"
         end
-      end
-
-      # handle XFORWARD
-      def process_xforward(params)
-        # XFORWARD NAME=spike.porcupine.org ADDR=168.100.189.2 PROTO=ESMTP
-        # XFORWARD HELO=spike.porcupine.org
-        xforward ||= {}
-        params.scan(/(\w+)=(\w+)/) { |name, value| xforward[name] = value }
-        # TODO: save xforward data
-        reply 250, "Ok"
       end
 
       # handle MAIL FROM:
