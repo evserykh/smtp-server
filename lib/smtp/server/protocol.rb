@@ -50,6 +50,9 @@ module SMTP
       def process_command_line(line)
         # split command at first space, if present
         command, rest = line.split(' ', 2)
+
+        return if command.nil?
+
         case command.upcase
         when 'EHLO'
           process_ehlo rest
