@@ -9,9 +9,9 @@ module SMTP
     # Advertises SIZE if max_size method is provided by user object
     #
     module Protocol
-      
+
       include SMTP::Server::Callbacks
-      
+
       # to be called after client connected
       # client_connection may be overriden to accept/reject based on client ip
       # connection should be closed if false is returned
@@ -40,13 +40,13 @@ module SMTP
         end
         !@state.include?(:quit) # return true unless QUIT is given
       end
-      
+
       #
       # protocol subroutines
-      # 
-      
+      #
+
       protected
-      
+
       def process_command_line(line)
         # split command at first space, if present
         command, rest = line.split(' ', 2)
@@ -85,7 +85,7 @@ module SMTP
           process_unknown
         end
       end
-      
+
       # EHLO/HELO is always legal, per the standard. On success
       # it always clears buffers and initiates a mail "transaction."
       # Which means that a MAIL FROM must follow.
@@ -110,8 +110,8 @@ module SMTP
           params = [get_server_domain]
           params << "STARTTLS" if respond_to?(:start_tls)
           params << "AUTH PLAIN LOGIN" if respond_to?(:authenticate)
-            # Multiple values for the keyword AUTH are allowed by RFC 1869, 
-            # however broke the parsing of several ESMTP client implementations. 
+            # Multiple values for the keyword AUTH are allowed by RFC 1869,
+            # however broke the parsing of several ESMTP client implementations.
             # A work around is, to add artificially a "=" (equal sign) between the AUTH keyword and the value.
             #send_data "250-AUTH=PLAIN"  # ? LOGIN CRAM-MD5
           params << "SIZE #{max_size}" if respond_to?(:max_size)
@@ -150,9 +150,9 @@ module SMTP
           else
             reply 220, "Start TLS negotiation"
             start_tls
-            # Upon completion of the TLS handshake, the SMTP protocol is reset to the initial state 
-            # (the state in SMTP after a server issues a 220 service ready greeting). The list of 
-            # SMTP service extensions returned in response to an EHLO command received after the TLS 
+            # Upon completion of the TLS handshake, the SMTP protocol is reset to the initial state
+            # (the state in SMTP after a server issues a 220 service ready greeting). The list of
+            # SMTP service extensions returned in response to an EHLO command received after the TLS
             # handshake MAY be different than the list returned before the TLS handshake.
             @state << :starttls
           end
@@ -163,15 +163,15 @@ module SMTP
 
       # handle AUTH
       #
-      # PLAIN authentication is efficient in that it requires only a single command and response. 
-      # Unless an encrypted SMTP connection is used, the data travels over the network unencryopted, 
-      # and is vulnerable to eavesdropping. 
+      # PLAIN authentication is efficient in that it requires only a single command and response.
+      # Unless an encrypted SMTP connection is used, the data travels over the network unencryopted,
+      # and is vulnerable to eavesdropping.
       #
-      # LOGIN authentication is not described by any RFC, but it is used by the user agent Pine, some 
-      # versions of Outlook and Netscape, and maybe others. LOGIN authentication is less efficient 
-      # than PLAIN, because three interactions are required. 
-      # 
-      # TODO: CRAM-MD5 authentication avoids transmitting unexncrypted passwords over the network. The 
+      # LOGIN authentication is not described by any RFC, but it is used by the user agent Pine, some
+      # versions of Outlook and Netscape, and maybe others. LOGIN authentication is less efficient
+      # than PLAIN, because three interactions are required.
+      #
+      # TODO: CRAM-MD5 authentication avoids transmitting unexncrypted passwords over the network. The
       # disadvantage is that the password must be held unencrypted on the server as well as on the client.
       #
       def process_auth str
@@ -206,11 +206,11 @@ module SMTP
 
       def process_auth_plain_line(line)
         plain = line.unpack("m").first
-        # The client sends the authorization identity (identity to login as), 
-        # followed by a US-ASCII NULL character, followed by the authentication 
-        # identity (identity whose password will be used), followed by a US-ASCII 
-        # NULL character, followed by the clear-text password. The client may 
-        # leave the authorization identity empty to indicate that it is the same 
+        # The client sends the authorization identity (identity to login as),
+        # followed by a US-ASCII NULL character, followed by the authentication
+        # identity (identity whose password will be used), followed by a US-ASCII
+        # NULL character, followed by the clear-text password. The client may
+        # leave the authorization identity empty to indicate that it is the same
         # as the authentication identity.
         _, user, pass = plain.split("\000")
         process_plain_auth(user, pass)
@@ -229,9 +229,9 @@ module SMTP
       end
 
       # process authentication parameters
-      # calls receive_plain_auth with user and password
+      # calls authenticate with user and password
       def process_plain_auth(user, password)
-        if receive_plain_auth(user, password)
+        if authenticate(user, password)
           reply 235, "authentication ok"
           @state << :auth
         else
@@ -248,7 +248,7 @@ module SMTP
         # TODO: save xforward data
         reply 250, "Ok"
       end
-      
+
       # handle MAIL FROM:
       # calls receive_sender with provided address and optional parameters
       def process_mail_from params
@@ -262,12 +262,12 @@ module SMTP
           reply 503, "Sender already given"
           return
         end
-        
+
         if params.nil?
           reply 501, "Syntax: MAIL FROM:<address>"
           return
         end
-        
+
         reverse_path, mail_parameters = params.split(' ', 2)
         if reverse_path !~ /@|<>/  # valid email or empty sender (<>)
           reply 501, "Syntax: MAIL FROM:<address>"
@@ -289,7 +289,7 @@ module SMTP
           reply 503, "No sender given"
           return
         end
-        
+
         forward_path, rcpt_parameters = params.split(' ', 2)
         if forward_path !~ /@/
           reply 501, "Syntax: RCPT TO:<address>"
@@ -401,7 +401,7 @@ module SMTP
           write "#{code} #{message}\r\n"
         end
       end
-      
+
       # remove leading '<' and trailing '>' from email address
       def unbracket(str)
         # ? str[/[^ <]+@[^> ]+/]
@@ -411,7 +411,7 @@ module SMTP
           return str
         end
       end
-      
+
     end
   end
 end
