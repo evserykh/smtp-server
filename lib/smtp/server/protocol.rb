@@ -248,6 +248,12 @@ module SMTP
         #  reply 550, "This server requires STARTTLS before MAIL FROM"
         #elsif (options[:auth] == :required and !@state.include?(:auth))
         #  reply 550, "This server requires authentication before MAIL FROM"
+
+        unless @state.include?(:auth)
+          reply 550, "This server requires authentication before MAIL FROM"
+          return
+        end
+
         if @state.include?(:mail_from)
           reply 503, "Sender already given"
           return
