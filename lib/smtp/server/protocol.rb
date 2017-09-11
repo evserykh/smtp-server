@@ -224,6 +224,7 @@ module SMTP
           process_plain_auth(@login_auth.shift, @login_auth.shift)
           @state.delete :auth_login_incomplete
         else
+          @state << :auth_login_incomplete
           reply 334, "UGFzc3dvcmQ6"  # 'Password:' in Base64
         end
       end
