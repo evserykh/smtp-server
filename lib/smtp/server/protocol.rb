@@ -336,7 +336,7 @@ module SMTP
 
       # handle RSET
       def process_rset
-        reset_protocol_state
+        rset_protocol_state
         reply 250, "OK"
       end
 
@@ -386,6 +386,13 @@ module SMTP
         s,@state = @state,[]
         @state << :starttls if s.include?(:starttls)
         @state << :ehlo if s.include?(:ehlo)
+      end
+
+      def rset_protocol_state
+        s,@state = @state,[]
+        @state << :starttls if s.include?(:starttls)
+        @state << :ehlo if s.include?(:ehlo)
+        @state << :auth if s.include?(:auth)
       end
 
       # send a multi-line reply if +message+ is a Array, otherwise send a single line reply
