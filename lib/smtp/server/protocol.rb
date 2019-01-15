@@ -71,7 +71,7 @@ module SMTP
         when 'DATA'
           process_data
         when 'RSET'
-          process_expn
+          process_rset
         when 'QUIT'
           process_quit
         when 'VRFY'
